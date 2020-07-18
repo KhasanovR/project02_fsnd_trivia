@@ -142,14 +142,14 @@ class TriviaTestCase(unittest.TestCase):
 
         res = self.client().post('/categories', json = json_create_category)
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 405)
-        self.assertEqual(data['success'], False)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
 
     def test_error_400_create_category_with_missing_json(self):
         
         res = self.client().post('/categories')
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 405)
+        self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Method Not Allowed')
 
