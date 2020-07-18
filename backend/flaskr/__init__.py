@@ -69,7 +69,7 @@ def create_app(test_config=None):
   This removal will persist in the database and when you refresh the page. 
   '''
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
-  def delete_questions(question_id):
+  def delete_question(question_id):
     question = Question.query.get(question_id)
     if not question:
       abort(400, {'message': 'Question ID {}: Not Found'.format(question_id)})
@@ -82,16 +82,7 @@ def create_app(test_config=None):
     except:
       abort(422)
 
-  '''
-  @TODO(Done): 
-  Create an endpoint to POST a new question, 
-  which will require the question and answer text, 
-  category, and difficulty score.
-
-  TEST: When you submit a question on the "Add" tab, 
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
-  '''
+  
   @app.route('/questions', methods=['POST'])
   def create_or_search_questions():
     body = request.get_json()
@@ -99,56 +90,80 @@ def create_app(test_config=None):
     if not body:
       abort(400, {'message': 'request does not contain a valid JSON body.'})
     
-    new_question = body.get('question', None)
-    new_answer = body.get('answer', None)
-    new_category = body.get('category', None)
-    new_difficulty = body.get('difficulty', None)
+    search_term = body.get('searchTerm', None)
+    
+    if search_term is None:
+      '''
+      @TODO(Done): 
+      Create an endpoint to POST a new question, 
+      which will require the question and answer text, 
+      category, and difficulty score.
 
-    if not new_question:
-      abort(400, {'message': 'Fill Question Field'})
+      TEST: When you submit a question on the "Add" tab, 
+      the form will clear and the question will appear at the end of the last page
+      of the questions list in the "List" tab.  
+      '''
+      new_question = body.get('question', None)
+      new_answer = body.get('answer', None)
+      new_category = body.get('category', None)
+      new_difficulty = body.get('difficulty', None)
 
-    if not new_answer:
-      abort(400, {'message': 'Fill Answer Field'})
+      if not new_question:
+        abort(400, {'message': 'Fill Question Field'})
 
-    if not new_category:
-      abort(400, {'message': 'Fill Category Field'})
+      if not new_answer:
+        abort(400, {'message': 'Fill Answer Field'})
 
-    if not new_difficulty:
-      abort(400, {'message': 'Fill Difficulty Field'})
+      if not new_category:
+        abort(400, {'message': 'Fill Category Field'})
 
-    try:
-      question = Question(
-        question = new_question, 
-        answer = new_answer, 
-        category= new_category,
-        difficulty = new_difficulty
-        )
-      question.insert()
+      if not new_difficulty:
+        abort(400, {'message': 'Fill Difficulty Field'})
+
+      try:
+        question = Question(
+          question = new_question, 
+          answer = new_answer, 
+          category= new_category,
+          difficulty = new_difficulty
+          )
+        question.insert()
+
+        return jsonify({
+          'success': True,
+          'created': question.id,
+          'question': {
+            'question': question.question,
+            'answer': question.answer,
+            'category': question.category,
+            'difficulty': question.difficulty
+          }
+        })
+
+      except:
+        abort(422)
+    else:
+      '''
+      @TODO: Create a POST endpoint to get questions based on a search term. 
+      It should return any questions for whom the search term 
+      is a substring of the question. 
+
+      TEST: Search by any phrase. The questions list will update to include 
+      only question that include that string within their question. 
+      Try using the word "title" to start. 
+      '''
+      questions = Question.query.filter(Question.question.like("%{}%".format(search_term))).all()
+
+      if not questions:
+        abort(404, {'message': 'Question containing "{}": No Found.'.format(search_term)})
+    
+      questions_found = [question.format() for question in questions]
 
       return jsonify({
         'success': True,
-        'created': question.id,
-        'question': {
-          'question': question.question,
-          'answer': question.answer,
-          'category': question.category,
-          'difficulty': question.difficulty
-        }
+        'questions': questions_found,
       })
 
-    except:
-      abort(422)
-
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
-
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
 
   '''
   @TODO: 
