@@ -33,11 +33,11 @@ class TriviaTestCase(unittest.TestCase):
     """
 
 #----------------------------------------------------------------------------#
-# General Test
+# General Availability Test
 #----------------------------------------------------------------------------#
     
-    def test_endpoint_not_available(self):
-        """Test getting an endpoint which does not exist """
+    def test_available_endpoint(self):
+        
         res = self.client().get('/DoesNotExist')
         data = json.loads(res.data)
 
@@ -46,7 +46,20 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Resource Not Found')
 
+#----------------------------------------------------------------------------#
+# Tests for GET endpoint on /categories/<string:category_id>/questions 
+#----------------------------------------------------------------------------#
+    
+    def test_get_questions_from_category(self):
+        res = self.client().get('/categories/1/questions')
+        data = json.loads(res.data)
 
-# Make the tests conveniently executable
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(len(data['questions']) > 0)
+        self.assertTrue(data['total_questions'] > 0)
+        self.assertEqual(data['current_category'], '1')
+
+
 if __name__ == "__main__":
     unittest.main()
