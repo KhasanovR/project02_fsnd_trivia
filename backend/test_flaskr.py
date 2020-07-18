@@ -238,5 +238,59 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Resource Not Found')
 
+#----------------------------------------------------------------------------#
+# Tests for POST endpoint on /quizzes
+#----------------------------------------------------------------------------#
+    def test_play_quiz_with_category(self):
+        
+        json_play_quizz = {
+            'previous_questions' : [1, 2, 3],
+            'quiz_category' : {
+                'type' : 'Science',
+                'id' : '1'
+                }
+        } 
+        res = self.client().post('/quizzes', json = json_play_quizz)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['question']['question'])
+        self.assertTrue(data['question']['id'] not in json_play_quizz['previous_questions'])
+    
+    def test_play_quiz_without_category(self):
+        
+        json_play_quizz = {
+            'previous_questions' : [1, 2, 3]
+        } 
+        res = self.client().post('/quizzes', json = json_play_quizz)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['question']['question'])
+        self.assertTrue(data['question']['id'] not in json_play_quizz['previous_questions'])
+
+    def test_error_400_play_quiz(self):
+        
+        res = self.client().post('/quizzes')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data['error'], 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Please provide a JSON body with previous question Ids and optional category.')
+
+    def test_error_405_play_quiz(self):
+        
+        res = self.client().get('/quizzes')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['error'], 405)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Method Not Allowed')
+
+
 if __name__ == "__main__":
     unittest.main()
