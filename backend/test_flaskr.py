@@ -69,5 +69,67 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['error'], 400)
         self.assertEqual(data['message'], 'No questions with category 14125412 found.')
 
+#----------------------------------------------------------------------------#
+# Tests for POST endpoint on /questions 
+#----------------------------------------------------------------------------#
+
+    def test_create_question(self):
+
+        json_create_question = {
+            'question' : 'Is this a test question?',
+            'answer' : 'Yes it is!',
+            'category' : '1',
+            'difficulty' : 1
+        } 
+
+        res = self.client().post('/questions', json = json_create_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['total_questions'] > 0)
+
+    def test_error_create_question(self):
+        
+        json_create_question_error = {
+            'question' : 'Is this a test question?',
+            'answer' : 'Yes it is!',
+            'difficulty' : 1
+        } 
+
+        res = self.client().post('/questions', json = json_create_question_error)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Fill Category Field')
+
+    def test_search_question(self):
+        
+        json_search_question = {
+            'searchTerm' : 'test',
+        } 
+
+        res = self.client().post('/questions', json = json_search_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(len(data['questions']) > 0)
+        self.assertTrue(data['total_questions'] > 0)
+
+    def test_error_404_search_question(self):
+        
+        json_search_question = {
+            'searchTerm' : 'there is no question with such a string in it',
+        } 
+
+        res = self.client().post('/questions', json = json_search_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Question containing "there is no question with such a string in it": No Found.')
+
+
 if __name__ == "__main__":
     unittest.main()

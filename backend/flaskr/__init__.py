@@ -158,15 +158,15 @@ def create_app(test_config=None):
           )
         question.insert()
 
+        selections = Question.query.order_by(Question.id).all()
+        paginated_questions = paginate_questions(request, selections)
+
+        # Return succesfull response
         return jsonify({
           'success': True,
           'created': question.id,
-          'question': {
-            'question': question.question,
-            'answer': question.answer,
-            'category': question.category,
-            'difficulty': question.difficulty
-          }
+          'questions': paginated_questions,
+          'total_questions': len(selections)
         })
 
       except:
@@ -187,10 +187,17 @@ def create_app(test_config=None):
         abort(404, {'message': 'Question containing "{}": No Found.'.format(search_term)})
     
       questions_found = [question.format() for question in questions]
+      selections = Question.query.order_by(Question.id).all() # needed for total_questions
+      
+      # Also query for categories and return as list of dict
+      categories = Category.query.all()
+      categories_all = [category.format() for category in categories]
 
       return jsonify({
         'success': True,
         'questions': questions_found,
+        'total_questions': len(selections),
+        'current_category' : categories_all
       })
 
 
