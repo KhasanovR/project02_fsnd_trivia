@@ -182,6 +182,38 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], "Method Not Allowed")
         self.assertEqual(data['success'], False)
 
+#----------------------------------------------------------------------------#
+# Tests for GET endpoint on /questions
+#----------------------------------------------------------------------------#
+
+    def test_get_all_questions_paginated(self):
+        
+        res = self.client().get('/questions?page=1', json={'category:' : 'science'})
+        
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['total_questions'] > 0)
+    
+    def test_error_405_get_all_questions_paginated(self):
+        
+        res = self.client().patch('/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['error'], 405)
+        self.assertEqual(data['message'], "Method Not Allowed")
+        self.assertEqual(data['success'], False)
+
+    def test_error_404_get_all_questions_paginated(self):
+        
+        res = self.client().get('/questions?page=1234567890')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['error'], 404)
+        self.assertEqual(data['message'], "Resource Not Found")
+        self.assertEqual(data['success'], False)
 
 if __name__ == "__main__":
     unittest.main()
