@@ -215,5 +215,28 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], "Resource Not Found")
         self.assertEqual(data['success'], False)
 
+#-------------------------------------------------h---------------------------#
+# Tests for DELETE endpoint /categories 
+#----------------------------------------------------------------------------#
+    
+    def test_delete_category(self):
+        
+        last_category_id = Category.query.order_by(desc(Category.id)).first().id 
+        res = self.client().delete('/categories/{}'.format(last_category_id))
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        
+    def test_404_delete_category(self):
+        
+        res = self.client().delete('/categories/{}'.format(12345678790))
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['error'], 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Resource Not Found')
+
 if __name__ == "__main__":
     unittest.main()
