@@ -144,7 +144,7 @@ def create_app(test_config=None):
         abort(422)
     else:
       '''
-      @TODO: Create a POST endpoint to get questions based on a search term. 
+      @TODO(Done): Create a POST endpoint to get questions based on a search term. 
       It should return any questions for whom the search term 
       is a substring of the question. 
 
@@ -166,8 +166,7 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
+  @TODO: Create a GET endpoint to get questions based on category. 
 
   TEST: In the "List" tab / main screen, clicking on one of the 
   categories in the left column will cause only questions of that 
@@ -176,8 +175,7 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
+  @TODO(Done): Create a POST endpoint to get questions to play the quiz. 
   This endpoint should take category and previous question parameters 
   and return a random questions within the given category, 
   if provided, and that is not one of the previous questions. 
@@ -186,6 +184,42 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/quizzes', methods=['POST'])
+  def play_quiz():
+
+    body = request.get_json()
+
+    if not body:
+      abort(400, {'message': 'Please provide a JSON body with previous question Ids and optional category.'})
+    
+    prev_questions = body.get('previous_questions', None)
+    cur_category = body.get('quiz_category', None)
+
+    if not prev_questions:
+      if cur_category:
+        questions = (Question.query
+          .filter(Question.category == str(cur_category['id']))
+          .all())
+      else:
+        questions = (Question.query.all())    
+    else:
+      if cur_category:
+        questions = (Question.query
+          .filter(Question.category == str(cur_category['id']))
+          .filter(Question.id.notin_(prev_questions))
+          .all())
+      else:
+        questions = (Question.query
+          .filter(Question.id.notin_(prev_questions))
+          .all())
+    
+    formatted_questions = [question.format() for question in questions]
+    random_question = formatted_questions[random.randint(0, len(formatted_questions))]
+    
+    return jsonify({
+        'success': True,
+        'question': random_question
+      })
 
   '''
   @TODO: 
