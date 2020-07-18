@@ -60,8 +60,7 @@ def create_app(test_config=None):
     })
 
   '''
-  @TODO: 
-  Create an endpoint to handle GET requests for questions, 
+  @TODO(Done): Create an endpoint to handle GET requests for questions, 
   including pagination (every 10 questions). 
   This endpoint should return a list of questions, 
   number of total questions, current category, categories. 
@@ -196,13 +195,33 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: Create a GET endpoint to get questions based on category. 
+  @TODO(Done): Create a GET endpoint to get questions based on category. 
 
   TEST: In the "List" tab / main screen, clicking on one of the 
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<string:category_id>/questions', methods=['GET'])
+  def get_questions_from_category(category_id):
+    selection = (Question.query
+    .filter(Question.category == str(category_id))
+    .order_by(Question.id)
+    .all())
 
+    if not selection:
+      abort(400, {'message': 'No questions with category {} found.'.format(category_id) })
+
+    paginated_questions = paginate_questions(request, selection)
+
+    if not paginated_questions:
+      abort(404, {'message': 'No questions in selected page.'})
+
+    return jsonify({
+      'success': True,
+      'questions': paginated_questions,
+      'total_questions': len(selection),
+      'current_category' : category_id
+      })
 
   '''
   @TODO(Done): Create a POST endpoint to get questions to play the quiz. 
@@ -252,7 +271,7 @@ def create_app(test_config=None):
       })
 
   '''
-  @TODO: Create error handlers for all expected errors including 404 and 422. 
+  @TODO(Done): Create error handlers for all expected errors including 404 and 422. 
   '''
   def get_error_message(error, text):
     try:
