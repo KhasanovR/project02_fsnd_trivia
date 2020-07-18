@@ -83,7 +83,7 @@ def create_app(test_config=None):
       abort(422)
 
   '''
-  @TODO: 
+  @TODO(Done): 
   Create an endpoint to POST a new question, 
   which will require the question and answer text, 
   category, and difficulty score.
@@ -92,6 +92,52 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  @app.route('/questions', methods=['POST'])
+  def create_or_search_questions():
+    body = request.get_json()
+
+    if not body:
+      abort(400, {'message': 'request does not contain a valid JSON body.'})
+    
+    new_question = body.get('question', None)
+    new_answer = body.get('answer', None)
+    new_category = body.get('category', None)
+    new_difficulty = body.get('difficulty', None)
+
+    if not new_question:
+      abort(400, {'message': 'Fill Question Field'})
+
+    if not new_answer:
+      abort(400, {'message': 'Fill Answer Field'})
+
+    if not new_category:
+      abort(400, {'message': 'Fill Category Field'})
+
+    if not new_difficulty:
+      abort(400, {'message': 'Fill Difficulty Field'})
+
+    try:
+      question = Question(
+        question = new_question, 
+        answer = new_answer, 
+        category= new_category,
+        difficulty = new_difficulty
+        )
+      question.insert()
+
+      return jsonify({
+        'success': True,
+        'created': question.id,
+        'question': {
+          'question': question.question,
+          'answer': question.answer,
+          'category': question.category,
+          'difficulty': question.difficulty
+        }
+      })
+
+    except:
+      abort(422)
 
   '''
   @TODO: 
