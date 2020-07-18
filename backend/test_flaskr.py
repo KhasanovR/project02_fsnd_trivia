@@ -153,6 +153,35 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Method Not Allowed')
 
+#----------------------------------------------------------------------------#
+# Tests for GET endpoint on /categories
+#----------------------------------------------------------------------------#
+    
+    def test_get_all_categories(self):
+        
+        json_create_category = {
+            'type' : 'Udacity'
+        } 
+
+        res = self.client().post('/categories', json = json_create_category)
+        
+        res = self.client().get('/categories')
+        
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(len(data['categories']) > 0)
+    
+    def test_error_405_get_all_categories(self):
+        
+        res = self.client().patch('/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['error'], 405)
+        self.assertEqual(data['message'], "Method Not Allowed")
+        self.assertEqual(data['success'], False)
+
 
 if __name__ == "__main__":
     unittest.main()
