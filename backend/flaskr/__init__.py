@@ -9,9 +9,20 @@ from models import setup_db, Question, Category
 QUESTIONS_PER_PAGE = 10
 
 def create_app(test_config=None):
-  # create and configure the app
+
   app = Flask(__name__)
   setup_db(app)
+
+  def paginate_questions(request, selection):
+    page = request.args.get('page', 1, type=int)
+    
+    start =  (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+
+    questions = [question.format() for question in selection]
+    current_questions = questions[start:end]
+
+    return current_questions
   
   '''
   @TODO(Done): Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
@@ -39,15 +50,14 @@ def create_app(test_config=None):
 
     categories_all = [category.format() for category in categories]
     
-    categories_returned = []
+    ret_categories = []
     for cat in categories_all:
-      categories_returned.append(cat['type'])
+      ret_categories.append(cat['type'])
 
     return jsonify({
       'success': True,
-      'categories' : categories_returned
+      'categories' : ret_categories
     })
-
 
   '''
   @TODO: 
@@ -61,6 +71,26 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
+  @app.route('/questions', methods=['GET'])
+  def get_questions():
+    selection = Question.query.order_by(Question.id).all()
+    paginated_questions = paginate_questions(request, selection)
+    if len(paginated_questions) == 0:
+      abort(404)
+
+    categories = Category.query.all()
+    categories_all = [category.format() for category in categories]
+    
+    ret_categories = []
+    for cat in categories_all:
+      ret_categories.append(cat['type'])
+    return jsonify({
+      'success': True,
+      'questions': paginated_questions,
+      'total_questions': len(selection),
+      'categories' : ret_categories,
+      'current_category' : ret_categories 
+      })
 
   '''
   @TODO(Done): Create an endpoint to DELETE question using a question ID. 
