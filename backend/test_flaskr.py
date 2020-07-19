@@ -4,10 +4,16 @@ import json
 from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app
-from models import setup_db, Question, Category
+from models import setup_db
+from models import Question
+from models import Category
 from sqlalchemy import desc
-from config import db_type, db_username, \
-    db_password, db_host, db_port, db_test_name
+from config import db_type
+from config import db_username
+from config import db_password
+from config import db_host
+from config import db_port
+from config import db_test_name
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -146,7 +152,7 @@ class TriviaTestCase(unittest.TestCase):
     def test_error_404_search_question(self):
 
         json_search_question = {
-            'searchTerm': 'there is no question with such a string in it', }
+            'searchTerm': '~~~', }
 
         res = self.client().post(
             '/questions',
@@ -156,9 +162,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(
-            data['message'],
-            'Question containing "there is no \
-                question with such a string in it": No Found.')
+            data['message'], 'Question containing "~~~": No Found.')
 
 # ----------------------------------------------------------------------------#
 # Tests for POST endpoint on /categories
@@ -351,8 +355,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(
             data['message'],
-            'Please provide a JSON body with \
-                previous question Ids and optional category.')
+            'No JSON Body')
 
     def test_error_405_play_quiz(self):
 

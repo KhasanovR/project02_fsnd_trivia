@@ -1,10 +1,15 @@
 import os
-from flask import Flask, request, abort, jsonify
+from flask import Flask
+from flask import request
+from flask import abort
+from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
 
-from models import setup_db, Question, Category
+from models import setup_db
+from models import Question
+from models import Category
 
 QUESTIONS_PER_PAGE = 10
 
@@ -55,9 +60,9 @@ def create_app(test_config=None):
 
         categories_all = [category.format() for category in categories]
 
-        ret_categories = []
+        ret_categories = {}
         for cat in categories_all:
-            ret_categories.append(cat['type'])
+            ret_categories[cat['id']] = cat['type']
 
         return jsonify({
             'success': True,
@@ -85,9 +90,10 @@ def create_app(test_config=None):
         categories = Category.query.all()
         categories_all = [category.format() for category in categories]
 
-        ret_categories = []
+        ret_categories = {}
         for cat in categories_all:
-            ret_categories.append(cat['type'])
+            ret_categories[cat['id']] = cat['type']
+
         return jsonify({
             'success': True,
             'questions': paginated_questions,
@@ -122,6 +128,7 @@ def create_app(test_config=None):
 
     @app.route('/questions', methods=['POST'])
     def create_or_search_questions():
+
         body = request.get_json()
 
         if not body:
@@ -172,7 +179,6 @@ def create_app(test_config=None):
                 selections = Question.query.order_by(Question.id).all()
                 paginated_questions = paginate_questions(request, selections)
 
-                # Return succesfull response
                 return jsonify({
                     'success': True,
                     'created': question.id,
@@ -198,14 +204,13 @@ def create_app(test_config=None):
             if not questions:
                 abort(
                     404, {
-                        'message': 'Question containing \
-                            "{}": No Found.'.format(search_term)})
+                        'message': 'Question containing "{}": No Found.'
+                        .format(search_term)})
 
             questions_found = [question.format() for question in questions]
             selections = Question.query.order_by(
-                Question.id).all()  # needed for total_questions
+                Question.id).all()
 
-            # Also query for categories and return as list of dict
             categories = Category.query.all()
             categories_all = [category.format() for category in categories]
 
@@ -233,8 +238,8 @@ def create_app(test_config=None):
         if not selection:
             abort(
                 400, {
-                    'message': 'No questions with category \
-                        {} found.'.format(category_id)})
+                    'message': 'No questions with category {} found.'
+                    .format(category_id)})
 
         paginated_questions = paginate_questions(request, selection)
 
@@ -267,12 +272,10 @@ def create_app(test_config=None):
             abort(
                 400, {
                     'message':
-                    'Please provide a JSON body with previous \
-                        question Ids and optional category.'})
+                    'No JSON Body'})
 
         prev_questions = body.get('previous_questions', None)
         cur_category = body.get('quiz_category', None)
-
         if not prev_questions:
             if cur_category:
                 questions = (
@@ -294,8 +297,11 @@ def create_app(test_config=None):
                              .all())
 
         formatted_questions = [question.format() for question in questions]
-        random_question = formatted_questions[random.randint(
-            0, len(formatted_questions))]
+        if len(formatted_questions):
+            random_question = formatted_questions[random.randint(
+                0, len(formatted_questions))-1]
+        else:
+            random_question = None
 
         return jsonify({
             'success': True,
